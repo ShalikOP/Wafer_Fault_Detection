@@ -1,0 +1,5 @@
+venv
+build
+dist
+Wafer_Fault_Detection.egg-info
+.DS_Store
