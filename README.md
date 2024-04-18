@@ -1,3 +1,3 @@
 ''''
-Welcome TO Wafer Fault detection by Md Shalique
+Welcome TO Wafer Fault detection by Md Shalique.
 ''''
