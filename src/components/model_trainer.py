@@ -17,6 +17,7 @@ from sklearn.metrics import r2_score
 from src.logger import logging
 from src.exception import CustomException
 from src.utils import evaluate_models, load_object, save_object 
+from src.utils import upload_file
 
 
 @dataclass
@@ -105,6 +106,13 @@ class ModelTrainer:
             predicted = best_model.predict(x_test)
 
             r2_square = r2_score(y_test, predicted)
+
+
+            upload_file(
+                from_filename=self.model_trainer_config.trained_model_file_path,
+                to_filename="model.pkl",
+                bucket_name=os.getenv("AWS_S3_BUCKET_NAME"),
+            )
 
             return r2_square
 
