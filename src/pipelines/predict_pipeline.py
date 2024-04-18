@@ -49,6 +49,8 @@ class PredictionPipeline:
     def predict(self, features):
             try:
                 model_path = download_model(
+                    bucket_name=os.getenv("AWS_S3_BUCKET_NAME"),
+                    bucket_file_name="model.pkl",
                     dest_file_name="model.pkl",
                 )
 
