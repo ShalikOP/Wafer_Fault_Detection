@@ -1,0 +1,66 @@
+# Building a docker image using github action and pushing it to ECR 
+name: workflow
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  integration:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Lint code
+        run: echo "Linting repository"
+
+      - name: Run unit tests
+        run: echo "Running unit tests"
+
+  build-and-push-ecr-image:
+    name: Continuous Delivery
+    needs: integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          IMAGE_TAG: latest
+        run: |
+          docker build -t ${{ secrets.AWS_ECR_REPO_URI }}:$IMAGE_TAG .
+          docker push ${{ secrets.AWS_ECR_REPO_URI }}:$IMAGE_TAG
+
+      - name: Set up environment variables
+        env:
+          MONGO_CONNECTION_URL: ${{ secrets.MONGO_CONNECTION_URL }}
+          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
+          MONGO_DATABASE_NAME: ${{ secrets.MONGO_DATABASE_NAME }}
+          MONGO_COLLECTION_NAME: ${{ secrets.MONGO_COLLECTION_NAME }}
+        run: |
+          echo "MONGO_CONNECTION_URL=${MONGO_CONNECTION_URL}" >> $GITHUB_ENV
+          echo "AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}" >> $GITHUB_ENV
+          echo "MONGO_DATABASE_NAME=${MONGO_DATABASE_NAME}" >> $GITHUB_ENV
+          echo "MONGO_COLLECTION_NAME=${MONGO_COLLECTION_NAME}" >> $GITHUB_ENV
